@@ -4,6 +4,7 @@ import { useState, type FormEvent } from "react";
 import { login } from "@/lib/api";
 import { useI18n } from "@/i18n/provider";
 import { LangSwitch } from "./LangSwitch";
+import { PasswordInput } from "./PasswordInput";
 
 export function LoginForm() {
   const { t, errorText } = useI18n();
@@ -51,7 +52,7 @@ export function LoginForm() {
         </div>
         <div className="field">
           <label htmlFor="password">{t("login.password")}</label>
-          <input id="password" name="password" type="password" className="input" autoComplete="current-password" required />
+          <PasswordInput id="password" name="password" autoComplete="current-password" required />
         </div>
 
         <button type="submit" className="btn btn-primary" disabled={pending}>

@@ -180,6 +180,30 @@ a {
 .input[aria-invalid="true"] {
   border-color: var(--danger);
 }
+/* password field with an eye button inside the right edge */
+.pw {
+  position: relative;
+}
+.pw .input {
+  padding-right: var(--touch);
+}
+.pw-toggle {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: var(--touch);
+  height: 100%;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.pw-toggle:hover {
+  color: var(--text);
+}
 .field-error {
   color: var(--danger);
   font-size: 12px;

@@ -5,6 +5,7 @@ import { ApiError, bff } from "@/lib/api";
 import type { Group } from "@/lib/types";
 import { ruleText, useI18n } from "@/i18n/provider";
 import { Dialog } from "./Dialog";
+import { PasswordInput } from "./PasswordInput";
 
 export function AddUserDialog({
   open,
@@ -54,25 +55,28 @@ export function AddUserDialog({
     }
   }
 
-  const text = (name: string, label: string, props: React.InputHTMLAttributes<HTMLInputElement> = {}) => (
-    <div className="field">
-      <label htmlFor={`add-${name}`}>{label}</label>
-      <input
-        id={`add-${name}`}
-        name={name}
-        className="input"
-        required
-        aria-invalid={fields[name] ? true : undefined}
-        aria-describedby={fields[name] ? `add-${name}-err` : undefined}
-        {...props}
-      />
-      {fields[name] && (
-        <span id={`add-${name}-err`} className="field-error">
-          {fields[name]}
-        </span>
-      )}
-    </div>
-  );
+  const text = (name: string, label: string, props: React.InputHTMLAttributes<HTMLInputElement> = {}) => {
+    const { type, ...rest } = props;
+    const common = {
+      id: `add-${name}`,
+      name,
+      required: true,
+      "aria-invalid": fields[name] ? true : undefined,
+      "aria-describedby": fields[name] ? `add-${name}-err` : undefined,
+      ...rest,
+    };
+    return (
+      <div className="field">
+        <label htmlFor={`add-${name}`}>{label}</label>
+        {type === "password" ? <PasswordInput {...common} /> : <input className="input" type={type} {...common} />}
+        {fields[name] && (
+          <span id={`add-${name}-err`} className="field-error">
+            {fields[name]}
+          </span>
+        )}
+      </div>
+    );
+  };
 
   return (
     <Dialog open={open} onClose={onClose} title={t("users.add")}>
