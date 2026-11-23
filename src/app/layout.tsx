@@ -9,6 +9,10 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono", display: "swap" });
 
+// Every page is rendered per request: the Content-Security-Policy nonce (src/middleware.ts) only reaches pages
+// that are not prerendered at build time.
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: { default: "Tenant Console", template: "%s · Tenant Console" },
   description: "Admin console for a multi-tenant API.",

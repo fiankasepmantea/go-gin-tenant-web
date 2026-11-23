@@ -63,6 +63,29 @@ browser --same origin--> Next.js route handlers --server to server--> Go API (AP
   trusted proxies of the API (backend `docs/authentication.md`) or every user will share the address of this server.
 - Errors are shown by `error.code` (stable), never by message text; 5xx errors show the request id.
 
+## Tenant by subdomain (optional)
+
+By default the login form asks for the tenant code. With `TENANT_BASE_DOMAIN=app.example.com`, the address
+`https://acme.app.example.com` means tenant `acme`: the form shows the tenant read-only and the server takes it from the
+address (the body cannot override it). On the bare address the form asks for the code once and moves the user to
+their tenant address.
+
+- DNS: a wildcard record `*.app.example.com` to the web server. TLS: a wildcard certificate.
+- The reverse proxy must forward `X-Forwarded-Host` and **overwrite** any value sent by the client.
+- Cookies are host-only, so each tenant address has its own session (and its own `tc_lang`). That is also the isolation you want.
+- Reserved names: `www`, `api`, `admin`, `platform`. Codes follow `^[a-z0-9][a-z0-9-]{1,62}$`.
+- Local test: `TENANT_BASE_DOMAIN=localhost`, open `http://acme.localhost:3000`.
+- `TENANT_BASE_DOMAIN` here is the web app's own variable. The API has one with the same name, but the web server calls the API
+  server to server and sends `X-Tenant-Code`, so the API never sees the browser's address.
+
+## Content-Security-Policy
+
+`src/middleware.ts` sets a policy with a per-request nonce (`script-src 'self' 'nonce-…' 'strict-dynamic'`, `object-src 'none'`,
+`frame-ancestors 'none'`, `connect-src 'self'`) and every page is rendered per request so the nonce reaches Next's scripts.
+`style-src` keeps `'unsafe-inline'` because React and Next write inline style attributes; styles cannot run code.
+Roll out safely: set `CSP_REPORT_ONLY=true`, open every page, check the browser console for violations, then remove it.
+`Strict-Transport-Security` is sent in production only. If you add a third-party script or font, add its origin to the policy.
+
 ## Known limits
 
 - Tenant users only. Platform admins (`/auth/platform/login`) are not supported here.
