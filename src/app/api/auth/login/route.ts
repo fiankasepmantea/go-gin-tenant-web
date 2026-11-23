@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { COOKIE } from "@/lib/constants";
 import { API_BASE, isSameOrigin, jsonError, writeSession } from "@/lib/server";
+import { requestHost, tenantFromHost, TENANT_BASE_DOMAIN } from "@/lib/tenant";
 import type { TokenResponse } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -21,14 +22,28 @@ export async function POST(req: NextRequest): Promise<Response> {
   } catch {
     return jsonError(400, "invalid_request", "The request body is not valid JSON.");
   }
-  const { tenant_code, username, password } = input;
-  if (typeof tenant_code !== "string" || typeof username !== "string" || typeof password !== "string") {
-    return jsonError(400, "invalid_request", "tenant_code, username and password are required.");
+  const { username, password } = input;
+  if (typeof username !== "string" || typeof password !== "string") {
+    return jsonError(400, "invalid_request", "username and password are required.");
+  }
+
+  // Subdomain mode: the tenant is the one in the address and the body cannot override it.
+  // Default mode: the tenant is the code the user typed.
+  let tenant: string;
+  if (TENANT_BASE_DOMAIN) {
+    const fromHost = tenantFromHost(requestHost(req.headers));
+    if (!fromHost) return jsonError(400, "invalid_request", "Open the console on the address of your tenant.");
+    tenant = fromHost;
+  } else {
+    if (typeof input.tenant_code !== "string" || input.tenant_code.trim() === "") {
+      return jsonError(400, "invalid_request", "tenant_code is required.");
+    }
+    tenant = input.tenant_code.trim();
   }
 
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
-    "X-Tenant-Code": tenant_code.trim(),
+    "X-Tenant-Code": tenant,
   };
   // The API rate limits per client address. Pass the browser's address on, otherwise every login would share
   // the address of this server (configure the trusted proxies of the API, see README.md).
@@ -60,7 +75,7 @@ export async function POST(req: NextRequest): Promise<Response> {
 
   // The tenant code is not a secret; the shell shows it so people know where they are.
   const jar = await cookies();
-  jar.set(COOKIE.tenant, tenant_code.trim(), {
+  jar.set(COOKIE.tenant, tenant, {
     httpOnly: false,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",

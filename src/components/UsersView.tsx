@@ -187,7 +187,7 @@ export function UsersView() {
       )}
 
       <div className="table-wrap" aria-busy={loading}>
-        <table>
+        <table className="users-table">
           <thead>
             <tr>
               <th>{t("users.name")}</th>
@@ -206,11 +206,11 @@ export function UsersView() {
                     <strong>{u.name}</strong>
                     <span>{u.email}</span>
                   </td>
-                  <td className="mono">{u.username}</td>
-                  <td className={u.group_id ? undefined : "muted"}>
+                  <td className="mono" data-label="Username">{u.username}</td>
+                  <td className={u.group_id ? undefined : "muted"} data-label={t("users.group")}>
                     {u.group_id ? (groupName.get(u.group_id) ?? "…") : t("users.noGroup")}
                   </td>
-                  <td>
+                  <td data-label={t("users.status")}>
                     <span className={u.is_active ? "badge badge-ok" : "badge"}>
                       {u.is_active ? t("users.active") : t("users.inactive")}
                     </span>
