@@ -64,3 +64,15 @@ export interface ImportResult {
   created: number;
   dry_run: boolean;
 }
+
+// GET /rbac/endpoints and GET/PUT /groups/:id/permissions
+export interface Endpoint {
+  endpoint_id: string;
+  method: string;
+  path: string;
+}
+
+export interface Permissions {
+  group_id: string;
+  endpoint_ids: string[];
+}

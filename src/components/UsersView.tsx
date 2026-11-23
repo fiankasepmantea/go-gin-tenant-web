@@ -6,6 +6,7 @@ import type { Envelope, Group, Me, Page, User } from "@/lib/types";
 import { useI18n } from "@/i18n/provider";
 import { AddUserDialog } from "./AddUserDialog";
 import { ConfirmDialog } from "./ConfirmDialog";
+import { EditUserDialog } from "./EditUserDialog";
 import { ImportDialog } from "./ImportDialog";
 
 const PER_PAGE = 20;
@@ -32,6 +33,7 @@ export function UsersView() {
   const [addOpen, setAddOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
   const [pending, setPending] = useState<Pending>(null);
+  const [editing, setEditing] = useState<User | null>(null);
 
   const reload = useCallback(() => setReloadKey((k) => k + 1), []);
 
@@ -220,6 +222,9 @@ export function UsersView() {
                       <span className="muted">{t("users.you")}</span>
                     ) : (
                       <div className="actions">
+                        <button type="button" className="btn btn-sm" onClick={() => setEditing(u)}>
+                          {t("users.edit")}
+                        </button>
                         {u.is_active ? (
                           <button type="button" className="btn btn-sm" onClick={() => setPending({ kind: "deactivate", user: u })}>
                             {t("users.deactivate")}
@@ -266,6 +271,7 @@ export function UsersView() {
       </div>
 
       {addOpen && <AddUserDialog open groups={groups} onClose={() => setAddOpen(false)} onCreated={reload} />}
+      {editing && <EditUserDialog open user={editing} groups={groups} onClose={() => setEditing(null)} onSaved={reload} />}
       {importOpen && <ImportDialog open onClose={() => setImportOpen(false)} onImported={reload} />}
       {pending && (
         <ConfirmDialog

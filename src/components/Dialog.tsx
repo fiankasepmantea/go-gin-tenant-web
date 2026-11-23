@@ -8,11 +8,13 @@ export function Dialog({
   open,
   onClose,
   title,
+  wide,
   children,
 }: {
   open: boolean;
   onClose: () => void;
   title: string;
+  wide?: boolean;
   children: ReactNode;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
@@ -26,7 +28,7 @@ export function Dialog({
   }, [open]);
 
   return (
-    <dialog ref={ref} className="dialog" aria-labelledby={titleId} onClose={onClose}>
+    <dialog ref={ref} className={wide ? "dialog dialog-wide" : "dialog"} aria-labelledby={titleId} onClose={onClose}>
       {open && (
         <div className="dialog-body">
           <h2 id={titleId}>{title}</h2>

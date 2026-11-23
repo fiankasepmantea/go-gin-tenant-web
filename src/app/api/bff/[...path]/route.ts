@@ -15,7 +15,7 @@ import type { TokenResponse } from "@/lib/types";
 export const dynamic = "force-dynamic";
 
 // Only the resources the console uses. Anything else is a 404 here, even if the API has it.
-const ALLOWED = [/^users(\/.*)?$/, /^groups(\/.*)?$/, /^auth\/me$/];
+const ALLOWED = [/^users(\/.*)?$/, /^groups(\/.*)?$/, /^rbac\/endpoints$/, /^auth\/me$/];
 
 const PASS_HEADERS = ["content-type", "content-disposition", "retry-after", "x-request-id"];
 

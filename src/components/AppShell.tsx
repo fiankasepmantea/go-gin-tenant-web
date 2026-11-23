@@ -31,6 +31,9 @@ export function AppShell({ tenant, children }: { tenant: string; children: React
           <Link href="/users" aria-current={pathname.startsWith("/users") ? "page" : undefined}>
             {t("nav.users")}
           </Link>
+          <Link href="/groups" aria-current={pathname.startsWith("/groups") ? "page" : undefined}>
+            {t("nav.groups")}
+          </Link>
         </nav>
         <div className="sidebar-foot">
           <LangSwitch />
