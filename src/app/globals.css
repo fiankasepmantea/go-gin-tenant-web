@@ -565,3 +565,35 @@ th.num {
   font-weight: 590;
   color: var(--primary);
 }
+
+/* ---------- groups and permissions ---------- */
+.dialog-wide {
+  width: min(720px, calc(100vw - 32px));
+}
+.perm-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: min(50dvh, 420px);
+  overflow: auto;
+}
+.perm-group {
+  margin: 0;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+.perm-group legend {
+  padding: 0 6px;
+}
+.perm-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.perm-row {
+  min-width: 0;
+}
+.perm-row .mono {
+  overflow-wrap: anywhere;
+}

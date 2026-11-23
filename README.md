@@ -51,7 +51,7 @@ browser --same origin--> Next.js route handlers --server to server--> Go API (AP
 - **Login** (`/api/auth/login`) sends the tenant code as `X-Tenant-Code` and stores the access and refresh tokens in
   `httpOnly`, `SameSite=Lax` cookies (`Secure` in production). The tenant code is also kept in a readable cookie so the
   sidebar can show it; it is not a secret.
-- **Proxy** (`/api/bff/*`) only forwards `users`, `groups` and `auth/me`. It adds the bearer token, and on an expired
+- **Proxy** (`/api/bff/*`) only forwards `users`, `groups`, `rbac/endpoints` and `auth/me`. It adds the bearer token, and on an expired
   access token it refreshes once and repeats the call. Other paths answer 404. Add a resource by extending `ALLOWED`
   in `src/app/api/bff/[...path]/route.ts`.
 - **Why a proxy:** the API has no CORS middleware, and cookies keep tokens out of reach of scripts.
@@ -90,7 +90,7 @@ Roll out safely: set `CSP_REPORT_ONLY=true`, open every page, check the browser 
 
 - Tenant users only. Platform admins (`/auth/platform/login`) are not supported here.
 - The API filters by equality, so the user filter is an **exact** username, not a search box.
-- Edit user (name, email, group) is not built yet.
+- Edit user changes name, email and group only. Resetting a user's password from the UI is not built yet (`POST /users/:id/password` exists).
 - No automated tests yet. No Dockerfile yet (the build output is `standalone`, ready for one).
 
 ## Layout
