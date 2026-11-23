@@ -86,12 +86,25 @@ their tenant address.
 Roll out safely: set `CSP_REPORT_ONLY=true`, open every page, check the browser console for violations, then remove it.
 `Strict-Transport-Security` is sent in production only. If you add a third-party script or font, add its origin to the policy.
 
+## Docker
+
+```bash
+docker build -t go-gin-tenant-web .
+docker run -p 3000:3000 -e API_URL=http://host.docker.internal:8080 go-gin-tenant-web
+```
+
+The image is a multi-stage build on `node:22-alpine`, runs as the non-root `node` user and has a health check on `/login`.
+Settings are read at run time from the environment (`API_URL`, `TENANT_BASE_DOMAIN`, `CSP_REPORT_ONLY`), so one image serves
+every environment. Put it behind a reverse proxy that terminates TLS and sets `X-Forwarded-Host` / `X-Forwarded-For`.
+`npm start` runs `next start`, which prints a warning with `output: standalone`; use the image (or
+`node .next/standalone/server.js` after copying `.next/static` next to it) to run the production build.
+
 ## Known limits
 
 - Tenant users only. Platform admins (`/auth/platform/login`) are not supported here.
 - The API filters by equality, so the user filter is an **exact** username, not a search box.
 - Edit user changes name, email and group only. Resetting a user's password from the UI is not built yet (`POST /users/:id/password` exists).
-- No automated tests yet. No Dockerfile yet (the build output is `standalone`, ready for one).
+- No automated tests yet.
 
 ## Layout
 

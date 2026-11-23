@@ -36,3 +36,20 @@ jobs:
       - run: npm ci
       - name: dependencies with known high severity issues
         run: npm audit --omit=dev --audit-level=high
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: the production image builds
+        run: docker build -t go-gin-tenant-web:ci .
+      - name: the container starts and answers on /login
+        run: |
+          docker run -d --name web -p 3000:3000 -e API_URL=http://localhost:8080 go-gin-tenant-web:ci
+          for i in $(seq 1 20); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:3000/login || true)
+            [ "$code" = "200" ] && exit 0
+            sleep 2
+          done
+          docker logs web
+          exit 1
