@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import { login } from "@/lib/api";
 import { useI18n } from "@/i18n/provider";
@@ -12,7 +13,15 @@ const CODE_RE = /^[a-z0-9][a-z0-9-]{1,62}$/;
 //  - no baseDomain: the form asks for the tenant code (default);
 //  - baseDomain and tenant: the address names the tenant (acme.app.example.com), shown read-only;
 //  - baseDomain without tenant: the address is not a tenant address, so ask for the code and move to its address.
-export function LoginForm({ tenant, baseDomain }: { tenant?: string; baseDomain?: string }) {
+export function LoginForm({
+  tenant,
+  baseDomain,
+  notice,
+}: {
+  tenant?: string;
+  baseDomain?: string;
+  notice?: "password-reset" | "password-changed";
+}) {
   const { t, errorText } = useI18n();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -52,6 +61,11 @@ export function LoginForm({ tenant, baseDomain }: { tenant?: string; baseDomain?
         </div>
         <p className="muted">{t("login.subtitle")}</p>
 
+        {notice && (
+          <div className="alert alert-ok" role="status">
+            {t(notice === "password-reset" ? "login.noticeReset" : "login.noticeChanged")}
+          </div>
+        )}
         {error && (
           <div className="alert" role="alert">
             {error}
@@ -81,6 +95,9 @@ export function LoginForm({ tenant, baseDomain }: { tenant?: string; baseDomain?
         <button type="submit" className="btn btn-primary" disabled={pending}>
           {pending ? t("login.submitting") : t("login.submit")}
         </button>
+        <Link href="/forgot-password" className="login-forgot">
+          {t("login.forgot")}
+        </Link>
       </form>
     </main>
   );

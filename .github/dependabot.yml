@@ -1,0 +1,28 @@
+# Weekly update PRs. CI (check, audit, docker) runs on each of them, so a bad update is visible before it is merged.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      dev-dependencies:
+        dependency-type: development
+        update-types: [minor, patch]
+    ignore:
+      # A new major of Next.js is a planned upgrade (read its migration guide first), not an automatic PR.
+      - dependency-name: next
+        update-types: ["version-update:semver-major"]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: weekly
+    ignore:
+      # Stay on the Node line the project supports (see package.json "engines" and the CI Node version).
+      - dependency-name: node
+        update-types: ["version-update:semver-major"]

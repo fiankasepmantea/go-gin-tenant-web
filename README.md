@@ -52,7 +52,7 @@ browser --same origin--> Next.js route handlers --server to server--> Go API (AP
 - **Login** (`/api/auth/login`) sends the tenant code as `X-Tenant-Code` and stores the access and refresh tokens in
   `httpOnly`, `SameSite=Lax` cookies (`Secure` in production). The tenant code is also kept in a readable cookie so the
   sidebar can show it; it is not a secret.
-- **Proxy** (`/api/bff/*`) only forwards `users`, `groups`, `rbac/endpoints` and `auth/me`. It adds the bearer token, and on an expired
+- **Proxy** (`/api/bff/*`) only forwards `users`, `groups`, `rbac/endpoints`, `auth/me` and `auth/password/change`. It adds the bearer token, and on an expired
   access token it refreshes once and repeats the call. Other paths answer 404. Add a resource by extending `ALLOWED`
   in `src/app/api/bff/[...path]/route.ts`.
 - **Why a proxy:** the API has no CORS middleware, and cookies keep tokens out of reach of scripts.
@@ -100,9 +100,11 @@ every environment. Put it behind a reverse proxy that terminates TLS and sets `X
 `npm start` runs `next start`, which prints a warning with `output: standalone`; use the image (or
 `node .next/standalone/server.js` after copying `.next/static` next to it) to run the production build.
 
+More on running it in production (settings, reverse proxy, wildcard TLS, reset links, replicas): [docs/deploy.md](docs/deploy.md).
+
 ## Known limits
 
-- Tenant users only. Platform admins (`/auth/platform/login`) are not supported here.
+- Tenant users only. Platform admins (`/auth/platform/login`), tenant management, Files and App versions have no screens here (the API has them).
 - The API filters by equality, so the user filter is an **exact** username, not a search box.
 - Edit user changes name, email and group only. Resetting a user's password from the UI is not built yet (`POST /users/:id/password` exists).
 - Tests cover the tenant-from-address logic, the Content-Security-Policy and the ID/EN message parity (`npm test`). The pages, the proxy and the forms have no tests yet.

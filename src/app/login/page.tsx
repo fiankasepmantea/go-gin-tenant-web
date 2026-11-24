@@ -5,7 +5,14 @@ import { requestHost, tenantFromHost, TENANT_BASE_DOMAIN } from "@/lib/tenant";
 
 export const metadata: Metadata = { title: "Sign in" };
 
-export default async function LoginPage() {
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ notice?: string | string[] }> }) {
   const tenant = TENANT_BASE_DOMAIN ? tenantFromHost(requestHost(await headers())) : null;
-  return <LoginForm baseDomain={TENANT_BASE_DOMAIN || undefined} tenant={tenant ?? undefined} />;
+  const { notice } = await searchParams;
+  return (
+    <LoginForm
+      baseDomain={TENANT_BASE_DOMAIN || undefined}
+      tenant={tenant ?? undefined}
+      notice={notice === "password-reset" || notice === "password-changed" ? notice : undefined}
+    />
+  );
 }

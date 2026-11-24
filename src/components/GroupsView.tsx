@@ -2,9 +2,10 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { bff } from "@/lib/api";
-import type { Envelope, Group, Page } from "@/lib/types";
+import type { Envelope, Group, Me, Page, User } from "@/lib/types";
 import { useI18n } from "@/i18n/provider";
 import { ConfirmDialog } from "./ConfirmDialog";
+import { Dialog } from "./Dialog";
 import { GroupDialog } from "./GroupDialog";
 import { PermissionsDialog } from "./PermissionsDialog";
 
@@ -21,6 +22,9 @@ export function GroupsView() {
   const [formFor, setFormFor] = useState<Group | "new" | null>(null);
   const [permsFor, setPermsFor] = useState<Group | null>(null);
   const [deleting, setDeleting] = useState<Group | null>(null);
+  const [blocked, setBlocked] = useState<{ group: Group; users: number } | null>(null);
+  const [checking, setChecking] = useState(false);
+  const [myGroupId, setMyGroupId] = useState<string | null>(null);
 
   const reload = useCallback(() => setReloadKey((k) => k + 1), []);
 
@@ -42,6 +46,32 @@ export function GroupsView() {
     // errorText changes with the language; a language switch must not refetch the list.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reloadKey]);
+
+  // The group of the signed-in user, so the permissions dialog can refuse changes that would lock them out.
+  // If the lookup fails (no permission to read users) the guard stays off; the API still decides what is allowed.
+  useEffect(() => {
+    const ctl = new AbortController();
+    bff<Me>("auth/me", { signal: ctl.signal })
+      .then((me) => bff<Envelope<User>>(`users/${me.user_id}`, { signal: ctl.signal }))
+      .then((r) => setMyGroupId(r.data.group_id))
+      .catch(() => undefined);
+    return () => ctl.abort();
+  }, []);
+
+  // A group with users cannot be deleted from here: the API does not check, and its users would lose their access.
+  async function startDelete(g: Group) {
+    setChecking(true);
+    setError(null);
+    try {
+      const r = await bff<Envelope<Page<User>>>(`users?group_id=${encodeURIComponent(g.group_id)}&per_page=1`);
+      if (r.data.total_data > 0) setBlocked({ group: g, users: r.data.total_data });
+      else setDeleting(g);
+    } catch (err) {
+      setError(errorText(err));
+    } finally {
+      setChecking(false);
+    }
+  }
 
   async function remove(g: Group) {
     await bff(`groups/${g.group_id}`, { method: "DELETE" });
@@ -94,7 +124,7 @@ export function GroupsView() {
                     <button type="button" className="btn btn-sm" onClick={() => setFormFor(g)}>
                       {t("groups.edit")}
                     </button>
-                    <button type="button" className="btn btn-sm btn-danger" onClick={() => setDeleting(g)}>
+                    <button type="button" className="btn btn-sm btn-danger" onClick={() => startDelete(g)} disabled={checking}>
                       {t("groups.delete")}
                     </button>
                   </div>
@@ -110,7 +140,19 @@ export function GroupsView() {
       {formFor && (
         <GroupDialog open group={formFor === "new" ? null : formFor} onClose={() => setFormFor(null)} onSaved={reload} />
       )}
-      {permsFor && <PermissionsDialog open group={permsFor} onClose={() => setPermsFor(null)} />}
+      {permsFor && (
+        <PermissionsDialog open group={permsFor} ownGroup={permsFor.group_id === myGroupId} onClose={() => setPermsFor(null)} />
+      )}
+      {blocked && (
+        <Dialog open onClose={() => setBlocked(null)} title={t("groups.deleteBlockedTitle")}>
+          <p>{t("groups.deleteBlockedBody", { n: blocked.users, name: blocked.group.name })}</p>
+          <div className="dialog-actions">
+            <button type="button" className="btn btn-primary" onClick={() => setBlocked(null)}>
+              {t("form.close")}
+            </button>
+          </div>
+        </Dialog>
+      )}
       {deleting && (
         <ConfirmDialog
           open
