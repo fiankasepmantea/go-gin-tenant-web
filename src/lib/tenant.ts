@@ -48,3 +48,10 @@ export function tenantFromHost(host: string | null | undefined, base: string = T
   if (!label || label.includes(".") || RESERVED.has(label)) return null;
   return TENANT_CODE_RE.test(label) ? label : null;
 }
+
+// The tenant of a request that has no session yet (login, forgot password). In subdomain mode it comes from the
+// address and the body cannot override it; otherwise it is the code the user typed. null means "unknown".
+export function tenantForRequest(h: HeaderReader, typed: unknown, base: string = TENANT_BASE_DOMAIN): string | null {
+  if (base) return tenantFromHost(requestHost(h), base);
+  return typeof typed === "string" && typed.trim() !== "" ? typed.trim() : null;
+}

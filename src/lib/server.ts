@@ -81,3 +81,35 @@ export function jsonError(status: number, code: string, message: string, headers
     headers: { "Content-Type": "application/json", "Cache-Control": "no-store", ...headers },
   });
 }
+
+// POST to an API endpoint that needs no session (forgot and reset password). The API's answer is passed through
+// unchanged, including its error envelope and Retry-After. The browser's address goes on in X-Forwarded-For because
+// the API rate limits per client address (see README.md, trusted proxies).
+export async function publicPost(
+  req: NextRequest,
+  path: string,
+  payload: unknown,
+  extra: Record<string, string> = {},
+): Promise<Response> {
+  const headers: Record<string, string> = { "Content-Type": "application/json", ...extra };
+  const fwd = req.headers.get("x-forwarded-for");
+  if (fwd) headers["X-Forwarded-For"] = fwd;
+
+  let upstream: Response;
+  try {
+    upstream = await fetch(`${API_BASE}${path}`, { method: "POST", headers, body: JSON.stringify(payload), cache: "no-store" });
+  } catch {
+    return jsonError(503, "service_unavailable", "The API cannot be reached.");
+  }
+
+  const out: Record<string, string> = { "Cache-Control": "no-store" };
+  const ct = upstream.headers.get("content-type");
+  if (ct) out["Content-Type"] = ct;
+  const retry = upstream.headers.get("retry-after");
+  if (retry) out["Retry-After"] = retry;
+  const reqId = upstream.headers.get("x-request-id");
+  if (reqId) out["X-Request-Id"] = reqId;
+
+  if (upstream.status === 204) return new Response(null, { status: 204, headers: out });
+  return new Response(await upstream.text(), { status: upstream.status, headers: out });
+}

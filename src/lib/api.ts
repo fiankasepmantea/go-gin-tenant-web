@@ -80,3 +80,24 @@ export async function login(tenantCode: string, username: string, password: stri
 export async function logout(): Promise<void> {
   await fetch("/api/auth/logout", { method: "POST", credentials: "same-origin" });
 }
+
+// Forgot and reset password need no session, so they go to their own routes, like login. The API answers forgot
+// with 202 whether or not the account exists, so a success here says nothing about the account.
+async function postPublic(path: string, body: unknown): Promise<void> {
+  const res = await fetch(path, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+    credentials: "same-origin",
+    cache: "no-store",
+  });
+  if (!res.ok) throw await parseError(res);
+}
+
+export function forgotPassword(tenantCode: string, identifier: string): Promise<void> {
+  return postPublic("/api/auth/password/forgot", { tenant_code: tenantCode, identifier });
+}
+
+export function resetPassword(token: string, newPassword: string): Promise<void> {
+  return postPublic("/api/auth/password/reset", { token, new_password: newPassword });
+}

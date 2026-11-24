@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { normalizeBase, requestHost, tenantFromHost } from "./tenant";
+import { normalizeBase, requestHost, tenantForRequest, tenantFromHost } from "./tenant";
 
 const BASE = "app.example.com";
 
@@ -74,5 +74,27 @@ describe("normalizeBase", () => {
   it("treats a missing or blank value as subdomain mode off", () => {
     expect(normalizeBase(undefined)).toBe("");
     expect(normalizeBase("   ")).toBe("");
+  });
+});
+
+describe("tenantForRequest", () => {
+  const headers = (o: Record<string, string>) => ({ get: (k: string) => o[k] ?? null });
+
+  it("in subdomain mode takes the tenant from the address and ignores what the body says", () => {
+    expect(tenantForRequest(headers({ host: "acme.app.example.com" }), "other", BASE)).toBe("acme");
+  });
+
+  it("in subdomain mode returns null on an address that is not a tenant address", () => {
+    expect(tenantForRequest(headers({ host: "app.example.com" }), "acme", BASE)).toBeNull();
+  });
+
+  it("without a base domain uses the typed code, trimmed", () => {
+    expect(tenantForRequest(headers({ host: "localhost:3000" }), "  acme ", "")).toBe("acme");
+  });
+
+  it("without a base domain returns null for a missing or blank code", () => {
+    expect(tenantForRequest(headers({}), undefined, "")).toBeNull();
+    expect(tenantForRequest(headers({}), "   ", "")).toBeNull();
+    expect(tenantForRequest(headers({}), 42, "")).toBeNull();
   });
 });

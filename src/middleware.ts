@@ -1,14 +1,15 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { COOKIE } from "@/lib/constants";
 import { buildCsp } from "@/lib/csp";
+import { isPublicPath } from "@/lib/paths";
 
 // Two jobs, both on every page request:
-//  1. Cheap gate: pages other than /login need a session cookie. The real check is the API: an expired or revoked
+//  1. Cheap gate: pages other than the public ones (src/lib/paths.ts) need a session cookie. The real check is the API: an expired or revoked
 //     session is answered with 401, and the proxy then clears the cookies so the next navigation lands on /login.
 //  2. Content-Security-Policy with a per-request nonce. Next.js puts the nonce on its own scripts when it sees it
 //     in the policy of the request, so no inline script runs without it.
 export function middleware(req: NextRequest) {
-  if (req.nextUrl.pathname !== "/login" && !req.cookies.has(COOKIE.refresh)) {
+  if (!isPublicPath(req.nextUrl.pathname) && !req.cookies.has(COOKIE.refresh)) {
     const url = req.nextUrl.clone();
     url.pathname = "/login";
     url.search = "";

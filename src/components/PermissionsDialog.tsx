@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { bff } from "@/lib/api";
+import { lockoutRisk } from "@/lib/permissions";
 import type { Endpoint, Envelope, Group, Permissions } from "@/lib/types";
 import { useI18n } from "@/i18n/provider";
 import { Dialog } from "./Dialog";
@@ -22,10 +23,12 @@ interface Section {
 export function PermissionsDialog({
   open,
   group,
+  ownGroup,
   onClose,
 }: {
   open: boolean;
   group: Group;
+  ownGroup: boolean; // the group of the signed-in user
   onClose: () => void;
 }) {
   const { t, errorText } = useI18n();
@@ -88,6 +91,13 @@ export function PermissionsDialog({
   }
 
   async function save() {
+    if (ownGroup && endpoints) {
+      const missing = lockoutRisk(endpoints, selected);
+      if (missing.length > 0) {
+        setError(t("groups.permLockout", { list: missing.join(", ") }));
+        return;
+      }
+    }
     setPending(true);
     setError(null);
     try {
@@ -109,6 +119,11 @@ export function PermissionsDialog({
   return (
     <Dialog open={open} onClose={onClose} title={t("groups.permTitle", { name: group.name })} wide>
       <p className="muted">{t("groups.permHelp")}</p>
+      {ownGroup && (
+        <div className="alert" role="note">
+          {t("groups.permOwnGroup")}
+        </div>
+      )}
       {error && (
         <div className="alert" role="alert">
           {error}
