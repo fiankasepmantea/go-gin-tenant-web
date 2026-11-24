@@ -28,7 +28,8 @@ groups grant the table still works, but group names show as "…" and the group 
 
 | Command | Does |
 |---|---|
-| `npm run check` | typecheck, lint and build (what CI runs) |
+| `npm run check` | typecheck, lint, tests and build |
+| `npm test` | unit tests (Vitest) |
 | `npm run gen:api` | writes `src/lib/api-schema.d.ts` from the API's `/openapi.json` (set `OPENAPI_URL` for another address). Needs a POSIX shell (Linux, WSL, macOS) |
 
 ## The API contract
@@ -104,7 +105,7 @@ every environment. Put it behind a reverse proxy that terminates TLS and sets `X
 - Tenant users only. Platform admins (`/auth/platform/login`) are not supported here.
 - The API filters by equality, so the user filter is an **exact** username, not a search box.
 - Edit user changes name, email and group only. Resetting a user's password from the UI is not built yet (`POST /users/:id/password` exists).
-- No automated tests yet.
+- Tests cover the tenant-from-address logic, the Content-Security-Policy and the ID/EN message parity (`npm test`). The pages, the proxy and the forms have no tests yet.
 
 ## Layout
 

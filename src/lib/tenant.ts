@@ -8,10 +8,12 @@
 // calls the API server to server, so the API never sees the browser's address, and the web app passes the tenant
 // on in the X-Tenant-Code header.
 
-export const TENANT_BASE_DOMAIN = (process.env.TENANT_BASE_DOMAIN ?? "")
-  .trim()
-  .toLowerCase()
-  .replace(/^\.+|\.+$/g, "");
+// " .App.Example.com. " becomes "app.example.com". Empty means subdomain mode is off.
+export function normalizeBase(raw: string | undefined): string {
+  return (raw ?? "").trim().toLowerCase().replace(/^\.+|\.+$/g, "");
+}
+
+export const TENANT_BASE_DOMAIN = normalizeBase(process.env.TENANT_BASE_DOMAIN);
 
 // Same rule as the tenants.code column of the API.
 export const TENANT_CODE_RE = /^[a-z0-9][a-z0-9-]{1,62}$/;

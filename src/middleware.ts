@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { COOKIE } from "@/lib/constants";
+import { buildCsp } from "@/lib/csp";
 
 // Two jobs, both on every page request:
 //  1. Cheap gate: pages other than /login need a session cookie. The real check is the API: an expired or revoked
@@ -16,19 +17,7 @@ export function middleware(req: NextRequest) {
 
   const dev = process.env.NODE_ENV !== "production";
   const nonce = btoa(crypto.randomUUID());
-  const csp = [
-    "default-src 'self'",
-    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${dev ? " 'unsafe-eval'" : ""}`,
-    // Next.js and React set inline style attributes; styles cannot run code, so this is the accepted trade-off.
-    "style-src 'self' 'unsafe-inline'",
-    "img-src 'self' data: blob:",
-    "font-src 'self'",
-    `connect-src 'self'${dev ? " ws: wss:" : ""}`,
-    "object-src 'none'",
-    "base-uri 'self'",
-    "form-action 'self'",
-    "frame-ancestors 'none'",
-  ].join("; ");
+  const csp = buildCsp(nonce, dev);
 
   const requestHeaders = new Headers(req.headers);
   requestHeaders.set("x-nonce", nonce);

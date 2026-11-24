@@ -11,8 +11,9 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "check": "npm run typecheck && npm run lint && npm run build",
-    "gen:api": "openapi-typescript ${OPENAPI_URL:-http://localhost:8080/openapi.json} -o src/lib/api-schema.d.ts"
+    "check": "npm run typecheck && npm run lint && npm run test && npm run build",
+    "gen:api": "openapi-typescript ${OPENAPI_URL:-http://localhost:8080/openapi.json} -o src/lib/api-schema.d.ts",
+    "test": "vitest run"
   },
   "dependencies": {
     "next": "^15.1.0",
@@ -26,7 +27,8 @@
     "eslint": "^8.57.0",
     "eslint-config-next": "^15.1.0",
     "openapi-typescript": "^7.0.0",
-    "typescript": "^5.6.0"
+    "typescript": "^5.6.0",
+    "vitest": "^3.2.4"
   },
   "overrides": {
     "next": {
