@@ -11,8 +11,20 @@ updates:
         dependency-type: development
         update-types: [minor, patch]
     ignore:
-      # A new major of Next.js is a planned upgrade (read its migration guide first), not an automatic PR.
+      # These majors are planned upgrades, not automatic PRs. Each one needs a decision first:
+      #  - next and eslint-config-next move together (read the Next.js migration guide);
+      #  - eslint 9+ needs the flat config format, which `next lint` and .eslintrc.json do not use yet;
+      #  - @types/node follows the Node major that CI and the Docker image run (22);
+      #  - typescript: wait until the Next.js version in use supports the new major.
       - dependency-name: next
+        update-types: ["version-update:semver-major"]
+      - dependency-name: eslint-config-next
+        update-types: ["version-update:semver-major"]
+      - dependency-name: eslint
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: typescript
         update-types: ["version-update:semver-major"]
   - package-ecosystem: github-actions
     directory: /
