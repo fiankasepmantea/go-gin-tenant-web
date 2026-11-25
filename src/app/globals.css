@@ -254,13 +254,19 @@ a {
 }
 
 /* ---------- shell ---------- */
+/* Phones: one column (top bar, then content). From 768px: sidebar on the left, content on the right. */
 .shell {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   min-height: 100dvh;
 }
+@media (min-width: 768px) {
+  .shell {
+    flex-direction: row;
+  }
+}
 .sidebar {
-  flex: 1 1 240px;
+  flex: 0 0 auto;
   max-width: 100%;
   min-width: 0;
   display: flex;
@@ -363,7 +369,7 @@ a {
   color: var(--primary);
 }
 .main {
-  flex: 999 1 560px;
+  flex: 1 1 0;
   min-width: 0;
   display: flex;
   flex-direction: column;
