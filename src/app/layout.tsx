@@ -17,6 +17,9 @@ export const metadata: Metadata = {
   title: { default: "Tenant Console", template: "%s · Tenant Console" },
   description: "Admin console for a multi-tenant API.",
   robots: { index: false, follow: false },
+  // The console has its own language switch. Browser translation rewrites the page before React starts and
+  // causes hydration errors.
+  other: { google: "notranslate" },
 };
 
 export const viewport: Viewport = {
@@ -28,7 +31,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const jar = await cookies();
   const lang = parseLang(jar.get(COOKIE.lang)?.value);
   return (
-    <html lang={lang} className={`${inter.variable} ${mono.variable}`}>
+    <html lang={lang} translate="no" className={`${inter.variable} ${mono.variable}`}>
       <body>
         <I18nProvider initialLang={lang}>{children}</I18nProvider>
       </body>
